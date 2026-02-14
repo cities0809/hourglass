@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>真實物理沙漏 (感應修復版)</title>
+    <title>真實物理沙漏 (全螢幕適配版)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap');
@@ -16,9 +16,10 @@
             font-family: 'Noto Sans TC', sans-serif;
             background-color: #1a202c;
             color: #e2e8f0;
-            overflow-y: auto;
-            touch-action: pan-y; 
-            min-height: 100dvh;
+            overflow: hidden; /* 禁止滑動 */
+            touch-action: none; 
+            height: 100dvh; /* 強制全高 */
+            width: 100vw;
         }
 
         /* --- 紋理與材質 --- */
@@ -36,8 +37,8 @@
         }
 
         .hourglass-container {
-            width: 160px;
-            height: 280px;
+            width: 140px; /* 稍微縮小基礎寬度以適配更多螢幕 */
+            height: 240px;
             position: relative;
             margin: 0 auto;
             filter: drop-shadow(0 0 20px rgba(0,0,0, 0.3));
@@ -67,7 +68,7 @@
             position: absolute;
             width: 100%;
             height: 50%;
-            border: 6px solid #cbd5e0;
+            border: 5px solid #cbd5e0;
             background: rgba(255, 255, 255, 0.05);
             overflow: hidden;
             box-sizing: border-box;
@@ -110,7 +111,7 @@
         .stream {
             position: absolute;
             top: 0; left: -2px;
-            width: 4px; height: 140px;
+            width: 4px; height: 120px;
             background-color: var(--sand-color);
             opacity: 0;
             transform-origin: top center;
@@ -121,14 +122,14 @@
         /* --- UI 元件 --- */
         input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
         input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none; height: 24px; width: 24px;
-            border-radius: 50%; background: var(--sand-color); cursor: pointer; margin-top: -10px;
+            -webkit-appearance: none; height: 20px; width: 20px;
+            border-radius: 50%; background: var(--sand-color); cursor: pointer; margin-top: -8px;
             box-shadow: 0 0 10px rgba(0,0,0,0.5);
             transition: background-color 0.3s;
             border: 2px solid #fff;
         }
         input[type=range]::-webkit-slider-runnable-track {
-            width: 100%; height: 6px; cursor: pointer; background: #4a5568; border-radius: 3px;
+            width: 100%; height: 4px; cursor: pointer; background: #4a5568; border-radius: 2px;
         }
         input[type=number] {
             -moz-appearance: textfield;
@@ -145,40 +146,49 @@
             background-color: #2d3748;
             color: white;
             border: 1px solid #4a5568;
-            padding: 0.5rem;
+            padding: 0.25rem 0.5rem;
             border-radius: 0.5rem;
-            font-size: 0.875rem;
+            font-size: 0.75rem;
+        }
+
+        /* 響應式縮放：當螢幕高度較小時，縮小沙漏 */
+        @media (max-height: 750px) {
+            .hourglass-wrapper { transform: scale(0.85); }
+        }
+        @media (max-height: 650px) {
+            .hourglass-wrapper { transform: scale(0.75); }
         }
     </style>
 </head>
-<body class="flex flex-col items-center min-h-[100dvh] py-6 px-4 bg-gray-900">
+<body class="flex flex-col items-center justify-between h-full py-4 px-4 bg-gray-900">
 
-    <!-- 頂部區塊：時間設定 -->
-    <div class="w-full max-w-lg flex flex-col items-center gap-3 z-50 mb-6">
-        <div class="flex items-center gap-2 bg-gray-800 p-2 rounded-xl shadow-lg border border-gray-700 w-full justify-center">
-            <div class="flex flex-col items-center">
-                <input type="number" id="hrInput" value="0" min="0" max="23" class="w-10 h-8 text-base rounded" placeholder="00">
-                <span class="text-[9px] text-gray-400">時</span>
+    <!-- 頂部區塊：時間設定 (緊湊版) -->
+    <div class="w-full max-w-md flex flex-col items-center z-50 shrink-0">
+        <div class="flex items-center gap-1 bg-gray-800 p-2 rounded-xl shadow-lg border border-gray-700 w-full justify-center">
+            <div class="flex items-center gap-1">
+                <input type="number" id="hrInput" value="0" min="0" max="23" class="w-8 h-8 text-sm rounded" placeholder="00">
+                <span class="text-[10px] text-gray-400">時</span>
             </div>
-            <span class="text-white text-base font-bold pb-3">:</span>
-            <div class="flex flex-col items-center">
-                <input type="number" id="minInput" value="1" min="0" max="59" class="w-10 h-8 text-base rounded" placeholder="01">
-                <span class="text-[9px] text-gray-400">分</span>
+            <span class="text-white text-sm font-bold pb-1">:</span>
+            <div class="flex items-center gap-1">
+                <input type="number" id="minInput" value="1" min="0" max="59" class="w-8 h-8 text-sm rounded" placeholder="01">
+                <span class="text-[10px] text-gray-400">分</span>
             </div>
-            <span class="text-white text-base font-bold pb-3">:</span>
-            <div class="flex flex-col items-center">
-                <input type="number" id="secInput" value="0" min="0" max="59" class="w-10 h-8 text-base rounded" placeholder="00">
-                <span class="text-[9px] text-gray-400">秒</span>
+            <span class="text-white text-sm font-bold pb-1">:</span>
+            <div class="flex items-center gap-1">
+                <input type="number" id="secInput" value="0" min="0" max="59" class="w-8 h-8 text-sm rounded" placeholder="00">
+                <span class="text-[10px] text-gray-400">秒</span>
             </div>
-            <button onclick="applyTimeSettings()" class="ml-2 h-8 bg-blue-600 hover:bg-blue-500 text-white text-xs px-3 rounded-lg transition-colors font-bold shadow-md">
+            <button onclick="applyTimeSettings()" class="ml-2 h-8 bg-blue-600 hover:bg-blue-500 text-white text-xs px-3 rounded-lg transition-colors font-bold shadow-md whitespace-nowrap">
                 設定
             </button>
         </div>
     </div>
 
-    <!-- 沙漏主體 -->
-    <div class="flex-1 flex flex-col items-center justify-center w-full relative mb-4">
-        <div class="hourglass-wrapper mb-6" id="rotator">
+    <!-- 中間區塊：沙漏 + 時間顯示 (彈性空間 flex-1, 確保不被壓縮太多) -->
+    <div class="flex-1 flex flex-col items-center justify-center w-full relative min-h-0">
+        <!-- 沙漏容器 -->
+        <div class="hourglass-wrapper mb-2" id="rotator">
             <div id="hourglassContainer" class="hourglass-container shape-classic">
                 <div class="glass glass-top">
                     <div class="sand-fluid sand-texture" id="sandTop"></div>
@@ -192,113 +202,89 @@
             </div>
         </div>
 
-        <!-- 倒數計時顯示 -->
-        <div class="text-5xl font-mono font-bold text-white tracking-widest drop-shadow-xl mb-2" id="timer">
+        <!-- 倒數顯示 -->
+        <div class="text-4xl font-mono font-bold text-white tracking-widest drop-shadow-xl mb-1" id="timer">
             00:01:00
         </div>
-        <div id="modeBadge" class="px-3 py-1 bg-gray-700 rounded-full text-xs font-bold text-gray-300 shadow-md mb-6">
+        <div id="modeBadge" class="px-3 py-1 bg-gray-700 rounded-full text-[10px] font-bold text-gray-300 shadow-md mb-2">
             準備就緒
         </div>
 
-        <!-- 手動模式內容 (移至此處) -->
-        <div id="panelManual" class="hidden w-full max-w-xs space-y-3 mb-6 z-50">
-            <!-- 快速定位圖示 -->
+        <!-- 手動模式滑桿 (預設隱藏，移至此處更直覺) -->
+        <div id="panelManual" class="hidden w-full max-w-xs space-y-2 mb-2 z-50">
             <div class="flex justify-between items-end px-1">
                 <button onclick="snapToAngle(-180)" class="flex flex-col items-center group">
-                    <span class="text-xl group-hover:scale-125 transition-transform">⬇️</span>
-                    <span class="text-[10px] text-gray-500 group-hover:text-white">倒置</span>
+                    <span class="text-lg">⬇️</span>
                 </button>
-                
-                <button onclick="snapToAngle(0)" class="flex flex-col items-center group -mt-2">
-                    <span class="text-2xl group-hover:scale-125 transition-transform">⬆️</span>
-                    <span class="text-xs font-bold text-white group-hover:text-green-400">直立</span>
+                <button onclick="snapToAngle(0)" class="flex flex-col items-center group -mt-1">
+                    <span class="text-xl">⬆️</span>
                 </button>
-
                 <button onclick="snapToAngle(180)" class="flex flex-col items-center group">
-                    <span class="text-xl group-hover:scale-125 transition-transform">⬇️</span>
-                    <span class="text-[10px] text-gray-500 group-hover:text-white">倒置</span>
+                    <span class="text-lg">⬇️</span>
                 </button>
             </div>
-
-            <!-- 滑桿 -->
-            <div class="relative w-full h-8 flex items-center">
+            <div class="relative w-full h-6 flex items-center">
                 <input type="range" id="tiltSlider" min="-180" max="180" value="0" list="snap-points"
                     class="w-full z-10 cursor-pointer" oninput="handleManualTilt(this.value)">
-                
-                <datalist id="snap-points">
-                    <option value="-180"></option>
-                    <option value="0"></option>
-                    <option value="180"></option>
-                </datalist>
-
-                <!-- 刻度線 -->
+                <datalist id="snap-points"><option value="-180"></option><option value="0"></option><option value="180"></option></datalist>
                 <div class="absolute w-full top-1/2 h-1 flex justify-between px-[10px] pointer-events-none transform -translate-y-1/2">
-                    <div class="w-0.5 h-2 bg-gray-600"></div>
-                    <div class="w-0.5 h-3 bg-gray-500"></div>
-                    <div class="w-0.5 h-2 bg-gray-600"></div>
+                    <div class="w-0.5 h-2 bg-gray-600"></div><div class="w-0.5 h-3 bg-gray-500"></div><div class="w-0.5 h-2 bg-gray-600"></div>
                 </div>
-            </div>
-            
-            <div class="text-center text-[10px] text-gray-500">
-                拖曳滑桿調整角度
             </div>
         </div>
 
-        <!-- 主要控制按鈕 -->
-        <div class="flex gap-4 w-full max-w-xs z-50">
+        <!-- 主要按鈕群 (緊湊排列) -->
+        <div class="flex gap-2 w-full max-w-xs z-50 shrink-0">
             <button onclick="startUserAction()" id="startBtn"
-                class="flex-1 py-4 bg-green-600 hover:bg-green-500 text-white rounded-2xl font-bold shadow-xl transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center gap-2 text-lg">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
-                </svg>
+                class="flex-[2] py-3 bg-green-600 hover:bg-green-500 text-white rounded-xl font-bold shadow-lg transition-all active:scale-95 flex items-center justify-center gap-1 text-base">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" /></svg>
                 開始
             </button>
-            <div class="flex flex-col gap-2 w-1/3">
-                <button onclick="pauseUserAction()" id="pauseBtn"
-                    class="flex-1 py-1 bg-yellow-600 hover:bg-yellow-500 text-white rounded-xl font-bold shadow-md text-sm">
-                    暫停
-                </button>
-                <button onclick="resetTimer(true)" 
-                    class="flex-1 py-1 bg-gray-600 hover:bg-gray-500 text-white rounded-xl font-bold shadow-md text-sm">
-                    重置
-                </button>
-            </div>
+            <button onclick="pauseUserAction()" id="pauseBtn"
+                class="flex-1 py-3 bg-yellow-600 hover:bg-yellow-500 text-white rounded-xl font-bold shadow-lg text-sm">
+                暫停
+            </button>
+            <button onclick="resetTimer(true)" 
+                class="flex-1 py-3 bg-gray-600 hover:bg-gray-500 text-white rounded-xl font-bold shadow-lg text-sm">
+                重置
+            </button>
         </div>
     </div>
 
-    <!-- 設定面板 -->
-    <div class="w-full max-w-sm bg-gray-800 p-5 rounded-3xl shadow-2xl border border-gray-700 z-50">
+    <!-- 底部控制面板 -->
+    <div class="w-full max-w-sm bg-gray-800 p-3 rounded-t-2xl shadow-2xl border-t border-gray-700 z-50 shrink-0">
         
         <!-- 分頁切換 -->
-        <div class="flex mb-4 bg-gray-900 rounded-xl p-1 border border-gray-700">
-            <button onclick="setMode('gyro')" id="tabGyro" class="flex-1 py-2 text-sm font-bold rounded-lg bg-gray-700 text-white transition-all">
+        <div class="flex mb-3 bg-gray-900 rounded-lg p-1 border border-gray-700">
+            <button onclick="setMode('gyro')" id="tabGyro" class="flex-1 py-1.5 text-xs font-bold rounded bg-gray-700 text-white transition-all">
                 手機感應
             </button>
-            <button onclick="setMode('manual')" id="tabManual" class="flex-1 py-2 text-sm font-bold rounded-lg text-gray-400 hover:text-white transition-all">
+            <button onclick="setMode('manual')" id="tabManual" class="flex-1 py-1.5 text-xs font-bold rounded text-gray-400 hover:text-white transition-all">
                 手動翻轉
             </button>
         </div>
 
         <!-- 感應模式內容 -->
-        <div id="panelGyro" class="space-y-3">
-            <div class="text-xs text-gray-400 text-center">
-                點擊上方【開始】後，將手機直立即可
+        <div id="panelGyro" class="space-y-2">
+            <div class="flex gap-2">
+                <button onclick="requestPermission()" id="permBtn"
+                    class="flex-[2] py-2 bg-blue-900/50 border border-blue-500 text-blue-200 hover:bg-blue-900 hover:text-white rounded-lg font-bold text-xs transition-all flex items-center justify-center gap-1">
+                    <span>📡 啟用感應器</span>
+                </button>
+                <button onclick="recalibrateGyro()" 
+                    class="flex-1 py-2 bg-red-900/50 border border-red-500 text-red-200 hover:bg-red-900 hover:text-white rounded-lg font-bold text-xs transition-all text-center">
+                    重新校正
+                </button>
             </div>
-            <button onclick="requestPermission()" id="permBtn"
-                class="w-full py-3 bg-blue-900/50 border border-blue-500 text-blue-200 hover:bg-blue-900 hover:text-white rounded-xl font-bold text-sm transition-all">
-                📡 點擊啟用陀螺儀權限
-            </button>
-            <div id="gyroError" class="hidden p-3 bg-red-900/50 border border-red-500 rounded-lg text-red-200 text-xs text-center">
-                無法存取感應器 (請檢查權限或使用手動模式)
+            <div id="gyroError" class="hidden p-1 text-red-400 text-[10px] text-center">
+                無法存取感應器，請確認權限或使用手動模式
             </div>
         </div>
 
-        <!-- 手動模式內容 (已移除，移至上方) -->
-
         <!-- 外觀設定 -->
-        <div class="mt-4 pt-4 border-t border-gray-700 flex gap-3">
+        <div class="mt-3 pt-3 border-t border-gray-700 flex gap-2">
             <div class="flex-1">
-                <select id="colorSelect" onchange="updateAppearance()" class="w-full bg-gray-900 border-gray-600 text-xs rounded-lg p-2 text-gray-300 focus:text-white focus:border-blue-500 outline-none">
+                <select id="colorSelect" onchange="updateAppearance()" class="w-full bg-gray-900 border-gray-600 text-xs rounded p-1.5 text-gray-300 focus:text-white outline-none">
                     <option value="#ed8936">活力橘</option>
                     <option value="#4299e1">海洋藍</option>
                     <option value="#48bb78">森林綠</option>
@@ -308,18 +294,17 @@
                 </select>
             </div>
             <div class="flex-1">
-                <select id="shapeSelect" onchange="updateAppearance()" class="w-full bg-gray-900 border-gray-600 text-xs rounded-lg p-2 text-gray-300 focus:text-white focus:border-blue-500 outline-none">
+                <select id="shapeSelect" onchange="updateAppearance()" class="w-full bg-gray-900 border-gray-600 text-xs rounded p-1.5 text-gray-300 focus:text-white outline-none">
                     <option value="shape-classic">經典曲線</option>
                     <option value="shape-modern">現代方角</option>
                     <option value="shape-round">圓潤球型</option>
                 </select>
             </div>
         </div>
-    </div>
-
-    <!-- 版本資訊 -->
-    <div class="mt-8 mb-4 text-gray-600 text-xs font-mono opacity-50 text-center">
-        v1.0.1-first edition
+        
+        <div class="mt-2 text-gray-600 text-[10px] font-mono opacity-50 text-center">
+            v1.0.2-responsive & fixed
+        </div>
     </div>
 
     <script>
@@ -338,9 +323,9 @@
         let isInvertedMode = false;
         let audioCtx = null;
 
-        // 快取變數，確保點擊開始時可以立即使用
+        // 快取變數
         let lastIsUpsideDown = false;
-        let lastIsUpright = true; // 預設直立，確保第一次點擊能運作
+        let lastIsUpright = true; 
         let lastVisualRot = 0;
 
         // Elements
@@ -410,15 +395,15 @@
                 panelGyro.classList.remove('hidden');
                 panelManual.classList.add('hidden');
                 
-                tabGyro.className = "flex-1 py-2 text-sm font-bold rounded-lg bg-blue-600 text-white transition-all shadow-md";
-                tabManual.className = "flex-1 py-2 text-sm font-bold rounded-lg text-gray-400 hover:text-white transition-all";
+                tabGyro.className = "flex-1 py-1.5 text-xs font-bold rounded bg-blue-600 text-white transition-all shadow-md";
+                tabManual.className = "flex-1 py-1.5 text-xs font-bold rounded text-gray-400 hover:text-white transition-all";
                 modeBadge.innerText = "模式: 手機感應";
             } else {
                 panelGyro.classList.add('hidden');
                 panelManual.classList.remove('hidden');
                 
-                tabManual.className = "flex-1 py-2 text-sm font-bold rounded-lg bg-blue-600 text-white transition-all shadow-md";
-                tabGyro.className = "flex-1 py-2 text-sm font-bold rounded-lg text-gray-400 hover:text-white transition-all";
+                tabManual.className = "flex-1 py-1.5 text-xs font-bold rounded bg-blue-600 text-white transition-all shadow-md";
+                tabGyro.className = "flex-1 py-1.5 text-xs font-bold rounded text-gray-400 hover:text-white transition-all";
                 modeBadge.innerText = "模式: 手動翻轉";
                 handleManualTilt(0);
                 tiltSlider.value = 0;
@@ -444,10 +429,39 @@
             }
         }
 
+        // 新增：重新校正功能
+        function recalibrateGyro() {
+            initAudio();
+            // 重置狀態變數
+            lastIsUpsideDown = false;
+            lastIsUpright = true;
+            lastVisualRot = 0;
+            isInvertedMode = false;
+            
+            // 嘗試重新綁定事件 (雖然通常不需要，但可以確保權限)
+            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                DeviceOrientationEvent.requestPermission()
+                    .then(res => {
+                        if (res === 'granted') {
+                            window.removeEventListener('deviceorientation', handleOrientation);
+                            window.addEventListener('deviceorientation', handleOrientation);
+                            alert("已重新連接感應器！請將手機直立。");
+                        }
+                    });
+            } else {
+                window.removeEventListener('deviceorientation', handleOrientation);
+                window.addEventListener('deviceorientation', handleOrientation);
+                alert("已重置感應器狀態！");
+            }
+            
+            // 強制重置計時器狀態
+            resetTimer(true);
+        }
+
         function startGyro() {
             window.addEventListener('deviceorientation', handleOrientation);
-            permBtn.innerText = "感應器運作中";
-            permBtn.className = "w-full py-3 bg-green-900/50 border border-green-500 text-green-200 rounded-xl font-bold text-sm transition-all";
+            permBtn.innerHTML = "<span>📡 感應運作中</span>";
+            permBtn.className = "flex-[2] py-2 bg-green-900/50 border border-green-500 text-green-200 rounded-lg font-bold text-xs transition-all flex items-center justify-center gap-1";
             permBtn.disabled = true;
             gyroError.classList.add('hidden');
         }
@@ -463,14 +477,15 @@
             const gamma = event.gamma;
             if (beta === null) return;
 
-            const isUpsideDown = (beta < -45 || beta > 135);
-            const isUpright = (beta > 45 && beta < 135);
+            // 調整判定邏輯，讓它更寬容一點
+            const isUpsideDown = (beta < -40 || beta > 140);
+            const isUpright = (beta > 40 && beta < 140);
 
             let visualRot = -gamma;
+            // 限制視覺旋轉，避免過度翻轉
             if (visualRot > 60) visualRot = 60;
             if (visualRot < -60) visualRot = -60;
             
-            // 儲存狀態，供 startUserAction 使用
             lastIsUpsideDown = isUpsideDown;
             lastIsUpright = isUpright;
             lastVisualRot = visualRot;
@@ -510,7 +525,7 @@
             if (isManualPaused) {
                 pauseTimer();
                 modeBadge.innerText = "準備就緒 / 已暫停";
-                modeBadge.className = "px-3 py-1 bg-gray-600 rounded-full text-xs font-bold text-white shadow-md mb-6";
+                modeBadge.className = "px-3 py-1 bg-gray-600 rounded-full text-xs font-bold text-white shadow-md mb-2";
                 hourglassContainer.classList.remove('shake-active');
             } else {
                 if (isUpsideDown || isUpright) {
@@ -522,15 +537,15 @@
                     
                     if (isRunning) {
                         modeBadge.innerText = isInvertedMode ? "倒置計時中..." : "正立計時中...";
-                        modeBadge.className = "px-3 py-1 bg-green-600 rounded-full text-xs font-bold text-white shadow-md mb-6";
+                        modeBadge.className = "px-3 py-1 bg-green-600 rounded-full text-xs font-bold text-white shadow-md mb-2";
                     } else if (timeLeft > 0) {
                         modeBadge.innerText = "傾斜角度過大 (暫停)";
-                        modeBadge.className = "px-3 py-1 bg-yellow-600 rounded-full text-xs font-bold text-white shadow-md mb-6";
+                        modeBadge.className = "px-3 py-1 bg-yellow-600 rounded-full text-xs font-bold text-white shadow-md mb-2";
                     }
                 } else {
                     if (isRunning) pauseTimer();
                     modeBadge.innerText = "橫放 (暫停中)";
-                    modeBadge.className = "px-3 py-1 bg-yellow-600 rounded-full text-xs font-bold text-white shadow-md mb-6";
+                    modeBadge.className = "px-3 py-1 bg-yellow-600 rounded-full text-xs font-bold text-white shadow-md mb-2";
                 }
             }
         }
@@ -540,11 +555,9 @@
             if (timeLeft <= 0) return; 
             isManualPaused = false;
             
-            // 強制觸發一次更新，解決感應延遲問題
             if(mode === 'manual') {
                 handleManualTilt(tiltSlider.value);
             } else if (mode === 'gyro') {
-                // 使用快取的感應數據 (如果沒有數據，預設會是直立狀態)
                 updateStateAndVisuals(lastIsUpsideDown, lastIsUpright, lastVisualRot);
             }
             
@@ -557,7 +570,7 @@
             pauseTimer();
             updateButtonStates();
             modeBadge.innerText = "已暫停";
-            modeBadge.className = "px-3 py-1 bg-yellow-600 rounded-full text-xs font-bold text-white shadow-md mb-6";
+            modeBadge.className = "px-3 py-1 bg-yellow-600 rounded-full text-xs font-bold text-white shadow-md mb-2";
             hourglassContainer.classList.remove('shake-active');
         }
 
@@ -566,7 +579,7 @@
                 startBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-gray-600');
                 startBtn.classList.add('bg-green-600', 'hover:bg-green-500');
                 startBtn.innerHTML = `
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
                     </svg> 開始`;
 
@@ -575,7 +588,7 @@
                 startBtn.classList.add('opacity-50', 'cursor-not-allowed', 'bg-gray-600');
                 startBtn.classList.remove('bg-green-600', 'hover:bg-green-500');
                 startBtn.innerHTML = `
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg> 計時中`;
 
@@ -589,10 +602,9 @@
                 pct = 1 - (timeLeft / totalTime);
             }
             
-            // 修正：上下方都預留空間，形成對稱美學
-            // 上方 (Draining): 100 (滿，留有空間) -> 230 (完全排空，確保低於瓶頸)
+            // 上方 (Draining): 100 (滿) -> 230 (空)
             const drainY = 100 + (pct * (230 - 100));
-            // 下方 (Filling): 230 (完全空，確保起始無沙子) -> 100 (滿，留有空間)
+            // 下方 (Filling): 230 (空) -> 100 (滿)
             const fillY = 230 - (pct * (230 - 100));
 
             if (!isInvertedMode) {
@@ -656,7 +668,7 @@
                 isManualPaused = true; 
                 updateButtonStates();
                 modeBadge.innerText = "已重置 (請按開始)";
-                modeBadge.className = "px-3 py-1 bg-gray-600 rounded-full text-xs font-bold text-white shadow-md mb-6";
+                modeBadge.className = "px-3 py-1 bg-gray-600 rounded-full text-xs font-bold text-white shadow-md mb-2";
                 if (mode === 'manual') {
                     snapToAngle(0);
                 }
