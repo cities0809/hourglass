@@ -3,67 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>真實物理沙漏 (全螢幕適配版)</title>
+    <title>✨ 翻轉魔法沙漏 ✨</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap');
 
         :root {
-            --sand-color: #ed8936; /* 預設橙色 */
+            --sand-color: #ed8936;
         }
 
         body {
             font-family: 'Noto Sans TC', sans-serif;
             background-color: #1a202c;
+            /* 加入一點魔法感的背景漸層 */
+            background-image: radial-gradient(circle at center, #2d3748 0%, #1a202c 100%);
             color: #e2e8f0;
-            overflow: hidden; /* 禁止滑動 */
+            overflow: hidden; 
             touch-action: none; 
-            height: 100dvh; /* 強制全高 */
+            height: 100dvh;
             width: 100vw;
+            display: flex;
+            flex-direction: column;
         }
 
-        /* --- 紋理與材質 --- */
-        .sand-texture {
-            background-color: var(--sand-color);
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.15'/%3E%3C/svg%3E");
-            transition: background-color 0.3s ease;
+        /* --- 架構分層 --- */
+        .hourglass-scaler {
+            transform-origin: center center;
+            transform: scale(0.9);
+            transition: transform 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
-        /* --- 沙漏結構 --- */
         .hourglass-wrapper {
-            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
             will-change: transform;
             transform-origin: center center;
         }
 
+        .animate-smooth {
+            transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
         .hourglass-container {
-            width: 140px; /* 稍微縮小基礎寬度以適配更多螢幕 */
-            height: 240px;
+            width: 130px;
+            height: 220px;
             position: relative;
-            margin: 0 auto;
-            filter: drop-shadow(0 0 20px rgba(0,0,0, 0.3));
+            filter: drop-shadow(0 0 15px rgba(0,0,0, 0.4));
             z-index: 10;
+            overflow: hidden;
+            border-radius: 40px;
+            transform: translateZ(0); 
         }
 
         /* 震動動畫 */
         @keyframes shake-hard {
-            0% { transform: translate(1px, 1px) rotate(0deg); }
-            10% { transform: translate(-1px, -2px) rotate(-1deg); }
-            20% { transform: translate(-3px, 0px) rotate(1deg); }
-            30% { transform: translate(3px, 2px) rotate(0deg); }
-            40% { transform: translate(1px, -1px) rotate(1deg); }
-            50% { transform: translate(-1px, 2px) rotate(-1deg); }
-            60% { transform: translate(-3px, 1px) rotate(0deg); }
-            70% { transform: translate(3px, 1px) rotate(-1deg); }
-            80% { transform: translate(-1px, -1px) rotate(1deg); }
-            90% { transform: translate(1px, 2px) rotate(0deg); }
-            100% { transform: translate(1px, -2px) rotate(-1deg); }
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            10% { transform: translate(-2px, -2px) rotate(-2deg); }
+            20% { transform: translate(2px, 2px) rotate(2deg); }
+            30% { transform: translate(-2px, 2px) rotate(-2deg); }
+            40% { transform: translate(2px, -2px) rotate(2deg); }
+            50% { transform: translate(-2px, 0) rotate(-2deg); }
+            60% { transform: translate(2px, 0) rotate(2deg); }
         }
         .shake-active {
-            animation: shake-hard 0.5s ease-in-out infinite;
+            animation: shake-hard 0.4s ease-in-out infinite;
         }
 
-        /* --- 玻璃球體 --- */
+        /* --- 玻璃組件 --- */
         .glass {
             position: absolute;
             width: 100%;
@@ -79,14 +86,15 @@
         
         .shape-classic .glass-top { border-radius: 40px 40px 50% 50%; }
         .shape-classic .glass-bottom { border-radius: 50% 50% 40px 40px; }
-        .shape-modern .glass-top { border-radius: 10px 10px 40px 40px; }
-        .shape-modern .glass-bottom { border-radius: 40px 40px 10px 10px; }
-        .shape-round .glass-top { border-radius: 50% 50% 50% 50%; transform: scale(0.95); margin-bottom: 2px;}
-        .shape-round .glass-bottom { border-radius: 50% 50% 50% 50%; transform: scale(0.95); margin-top: 2px;}
+        .shape-modern .glass-top { border-radius: 8px 8px 40px 40px; }
+        .shape-modern .glass-bottom { border-radius: 40px 40px 8px 8px; }
+        .shape-round .glass-top { border-radius: 50%; transform: scale(0.92) translateY(2px); border-bottom: 5px solid #cbd5e0;}
+        .shape-round .glass-bottom { border-radius: 50%; transform: scale(0.92) translateY(-2px); border-top: 5px solid #cbd5e0;}
+        
         .glass-top { top: 0; border-bottom: none; }
         .glass-bottom { bottom: 0; border-top: none; }
 
-        /* --- 沙子流體塊 --- */
+        /* --- 沙子 --- */
         .sand-fluid {
             position: absolute;
             width: 300px;
@@ -95,240 +103,201 @@
             left: 50%;
             margin-top: -150px;
             margin-left: -150px;
-            transform-origin: center center;
+            background-color: var(--sand-color);
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.2'/%3E%3C/svg%3E");
             will-change: transform;
         }
         .glass .sand-fluid { z-index: -1; }
 
-        /* --- 中間沙流 --- */
-        .stream-container {
-            position: absolute;
-            top: 50%; left: 50%;
-            width: 0; height: 0;
-            z-index: 15;
-            overflow: visible; 
-        }
+        /* --- 沙流 --- */
         .stream {
             position: absolute;
-            top: 0; left: -2px;
-            width: 4px; height: 120px;
+            top: 50%;
+            left: 50%;
+            width: 4px;
+            height: 120px; 
+            margin-left: -2px;
             background-color: var(--sand-color);
-            opacity: 0;
             transform-origin: top center;
-            transition: opacity 0.1s, background-color 0.3s ease;
+            z-index: 15;
+            opacity: 0; 
+            pointer-events: none;
         }
-        .stream.active { opacity: 1; }
 
-        /* --- UI 元件 --- */
-        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
-        input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none; height: 20px; width: 20px;
-            border-radius: 50%; background: var(--sand-color); cursor: pointer; margin-top: -8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
-            transition: background-color 0.3s;
-            border: 2px solid #fff;
+        /* --- 按鈕樣式 --- */
+        .side-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid #4a5568;
+            margin-bottom: 8px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: transparent; 
+            background-size: cover;
         }
-        input[type=range]::-webkit-slider-runnable-track {
-            width: 100%; height: 4px; cursor: pointer; background: #4a5568; border-radius: 2px;
+        .side-btn.active {
+            border-color: white;
+            transform: scale(1.1);
+            box-shadow: 0 0 10px rgba(255,255,255,0.3);
         }
+
+        .btn-color { box-shadow: inset 0 0 5px rgba(0,0,0,0.5); }
+        .btn-shape { background-color: #2d3748; color: #a0aec0; }
+        .btn-shape svg { width: 20px; height: 20px; }
+        .btn-shape.active { color: white; background-color: #4a5568; }
+
         input[type=number] {
             -moz-appearance: textfield;
             background: #2d3748;
             color: white;
             border: 1px solid #4a5568;
             text-align: center;
-            border-radius: 0.5rem;
-            transition: border-color 0.2s;
+            font-size: 16px; 
         }
         input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        input[type=number]:focus { outline: none; border-color: var(--sand-color); }
-        select {
-            background-color: #2d3748;
-            color: white;
-            border: 1px solid #4a5568;
-            padding: 0.25rem 0.5rem;
-            border-radius: 0.5rem;
-            font-size: 0.75rem;
+        
+        input[type=range] { -webkit-appearance: none; background: transparent; }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; height: 24px; width: 24px;
+            border-radius: 50%; background: #4299e1; 
+            margin-top: -10px; border: 2px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 4px; background: #4a5568; border-radius: 2px;
         }
 
-        /* 響應式縮放：當螢幕高度較小時，縮小沙漏 */
-        @media (max-height: 750px) {
-            .hourglass-wrapper { transform: scale(0.85); }
-        }
-        @media (max-height: 650px) {
-            .hourglass-wrapper { transform: scale(0.75); }
+        @media (max-height: 700px) {
+            .hourglass-scaler { 
+                transform: scale(0.75); 
+            }
+            #timer { font-size: 1.8rem; }
         }
     </style>
 </head>
-<body class="flex flex-col items-center justify-between h-full py-4 px-4 bg-gray-900">
+<body class="bg-gray-900">
 
-    <!-- 頂部區塊：時間設定 (緊湊版) -->
-    <div class="w-full max-w-md flex flex-col items-center z-50 shrink-0">
-        <div class="flex items-center gap-1 bg-gray-800 p-2 rounded-xl shadow-lg border border-gray-700 w-full justify-center">
-            <div class="flex items-center gap-1">
-                <input type="number" id="hrInput" value="0" min="0" max="23" class="w-8 h-8 text-sm rounded" placeholder="00">
-                <span class="text-[10px] text-gray-400">時</span>
+    <!-- 頂部：標題與時間設定 -->
+    <div class="w-full flex flex-col items-center pt-2 pb-2 z-50 shrink-0">
+        <h1 class="text-white font-bold text-lg mb-2 drop-shadow-md tracking-wider">✨ 翻轉魔法沙漏 ✨</h1>
+        <div class="flex items-center gap-1 bg-gray-800/80 backdrop-blur p-2 rounded-full border border-gray-700 shadow-lg">
+            <input type="number" id="hrInput" value="0" class="w-10 h-8 rounded text-base" placeholder="0">
+            <span class="text-gray-500 text-xs">:</span>
+            <input type="number" id="minInput" value="1" class="w-10 h-8 rounded text-base" placeholder="1">
+            <span class="text-gray-500 text-xs">:</span>
+            <input type="number" id="secInput" value="0" class="w-10 h-8 rounded text-base" placeholder="0">
+            <button onclick="applyTimeSettings()" class="ml-2 px-4 h-8 bg-blue-600 rounded-full text-white text-xs font-bold shadow hover:bg-blue-500 transition-colors whitespace-nowrap">設定</button>
+        </div>
+    </div>
+
+    <!-- 中間：主視圖 -->
+    <div class="flex-1 flex items-center justify-between w-full px-2 overflow-hidden relative">
+        
+        <!-- 左側：顏色選擇 -->
+        <div class="flex flex-col items-center justify-center w-12 z-40 gap-2 shrink-0">
+            <div class="text-[10px] text-gray-500 mb-1 font-bold">顏色</div>
+            <button class="side-btn btn-color active" style="background-color: #ed8936;" onclick="setColor('#ed8936', this)"></button>
+            <button class="side-btn btn-color" style="background-color: #4299e1;" onclick="setColor('#4299e1', this)"></button>
+            <button class="side-btn btn-color" style="background-color: #48bb78;" onclick="setColor('#48bb78', this)"></button>
+            <button class="side-btn btn-color" style="background-color: #9f7aea;" onclick="setColor('#9f7aea', this)"></button>
+            <button class="side-btn btn-color" style="background-color: #f56565;" onclick="setColor('#f56565', this)"></button>
+            <button class="side-btn btn-color" style="background-color: #e2e8f0;" onclick="setColor('#e2e8f0', this)"></button>
+        </div>
+
+        <!-- 中間：沙漏 + 資訊 + 滑桿 -->
+        <div class="flex-1 flex flex-col items-center justify-center h-full relative min-h-0 w-full">
+            
+            <div class="flex-1"></div>
+
+            <!-- 沙漏本體 -->
+            <div class="hourglass-scaler shrink-0 mb-2">
+                <div class="hourglass-wrapper animate-smooth" id="rotator">
+                    <div id="hourglassContainer" class="hourglass-container shape-classic">
+                        <div class="glass glass-top">
+                            <div class="sand-fluid" id="sandTop"></div>
+                        </div>
+                        <div class="stream" id="stream"></div>
+                        <div class="glass glass-bottom">
+                            <div class="sand-fluid" id="sandBottom"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <span class="text-white text-sm font-bold pb-1">:</span>
-            <div class="flex items-center gap-1">
-                <input type="number" id="minInput" value="1" min="0" max="59" class="w-8 h-8 text-sm rounded" placeholder="01">
-                <span class="text-[10px] text-gray-400">分</span>
+
+            <!-- 時間與狀態 -->
+            <div class="flex flex-col items-center shrink-0 mb-4 z-30">
+                <div class="text-4xl font-mono font-bold text-white drop-shadow-md leading-none" id="timer">00:01:00</div>
+                <div id="modeBadge" class="mt-1 px-2 py-0.5 bg-gray-700/80 rounded text-[10px] text-gray-300">準備就緒</div>
             </div>
-            <span class="text-white text-sm font-bold pb-1">:</span>
-            <div class="flex items-center gap-1">
-                <input type="number" id="secInput" value="0" min="0" max="59" class="w-8 h-8 text-sm rounded" placeholder="00">
-                <span class="text-[10px] text-gray-400">秒</span>
+
+            <!-- 手動滑桿 -->
+            <div id="sliderContainer" class="w-48 hidden z-50 flex-col gap-1 mb-2 shrink-0">
+                <div class="flex justify-between items-end px-1 w-full">
+                    <button onclick="snapToAngle(-180)" class="text-lg opacity-70 hover:opacity-100">⬇️</button>
+                    <button onclick="snapToAngle(0)" class="text-xl -mt-1 hover:scale-110 transition-transform">⬆️</button>
+                    <button onclick="snapToAngle(180)" class="text-lg opacity-70 hover:opacity-100">⬇️</button>
+                </div>
+                <input type="range" id="tiltSlider" min="-180" max="180" value="0" step="5" class="w-full cursor-pointer" oninput="handleManualTilt(this.value)">
             </div>
-            <button onclick="applyTimeSettings()" class="ml-2 h-8 bg-blue-600 hover:bg-blue-500 text-white text-xs px-3 rounded-lg transition-colors font-bold shadow-md whitespace-nowrap">
-                設定
+
+            <div class="flex-1"></div>
+        </div>
+
+        <!-- 右側：形狀選擇 -->
+        <div class="flex flex-col items-center justify-center w-12 z-40 gap-2 shrink-0">
+            <div class="text-[10px] text-gray-500 mb-1 font-bold">形狀</div>
+            <button class="side-btn btn-shape active" onclick="setShape('shape-classic', this)">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 2v6c0 3.31 2.69 6 6 6s6-2.69 6-6V2H6zm6 8c-1.1 0-2-.9-2-2V4h4v4c0 1.1-.9 2-2 2zm0 4c-3.31 0-6 2.69-6 6v2h12v-2c0-3.31-2.69-6-6-6z"/></svg>
+            </button>
+            <button class="side-btn btn-shape" onclick="setShape('shape-modern', this)">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 2h12v6l-2 4 2 4v6H6v-6l2-4-2-4V2z"/></svg>
+            </button>
+            <button class="side-btn btn-shape" onclick="setShape('shape-round', this)">
+                <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="6" r="4"/><circle cx="12" cy="18" r="4"/><rect x="11" y="10" width="2" height="4"/></svg>
             </button>
         </div>
     </div>
 
-    <!-- 中間區塊：沙漏 + 時間顯示 (彈性空間 flex-1, 確保不被壓縮太多) -->
-    <div class="flex-1 flex flex-col items-center justify-center w-full relative min-h-0">
-        <!-- 沙漏容器 -->
-        <div class="hourglass-wrapper mb-2" id="rotator">
-            <div id="hourglassContainer" class="hourglass-container shape-classic">
-                <div class="glass glass-top">
-                    <div class="sand-fluid sand-texture" id="sandTop"></div>
-                </div>
-                <div class="stream-container">
-                    <div class="stream" id="stream"></div>
-                </div>
-                <div class="glass glass-bottom">
-                    <div class="sand-fluid sand-texture" id="sandBottom"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 倒數顯示 -->
-        <div class="text-4xl font-mono font-bold text-white tracking-widest drop-shadow-xl mb-1" id="timer">
-            00:01:00
-        </div>
-        <div id="modeBadge" class="px-3 py-1 bg-gray-700 rounded-full text-[10px] font-bold text-gray-300 shadow-md mb-2">
-            準備就緒
-        </div>
-
-        <!-- 手動模式滑桿 (預設隱藏，移至此處更直覺) -->
-        <div id="panelManual" class="hidden w-full max-w-xs space-y-2 mb-2 z-50">
-            <div class="flex justify-between items-end px-1">
-                <button onclick="snapToAngle(-180)" class="flex flex-col items-center group">
-                    <span class="text-lg">⬇️</span>
-                </button>
-                <button onclick="snapToAngle(0)" class="flex flex-col items-center group -mt-1">
-                    <span class="text-xl">⬆️</span>
-                </button>
-                <button onclick="snapToAngle(180)" class="flex flex-col items-center group">
-                    <span class="text-lg">⬇️</span>
-                </button>
-            </div>
-            <div class="relative w-full h-6 flex items-center">
-                <input type="range" id="tiltSlider" min="-180" max="180" value="0" list="snap-points"
-                    class="w-full z-10 cursor-pointer" oninput="handleManualTilt(this.value)">
-                <datalist id="snap-points"><option value="-180"></option><option value="0"></option><option value="180"></option></datalist>
-                <div class="absolute w-full top-1/2 h-1 flex justify-between px-[10px] pointer-events-none transform -translate-y-1/2">
-                    <div class="w-0.5 h-2 bg-gray-600"></div><div class="w-0.5 h-3 bg-gray-500"></div><div class="w-0.5 h-2 bg-gray-600"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 主要按鈕群 (緊湊排列) -->
-        <div class="flex gap-2 w-full max-w-xs z-50 shrink-0">
-            <button onclick="startUserAction()" id="startBtn"
-                class="flex-[2] py-3 bg-green-600 hover:bg-green-500 text-white rounded-xl font-bold shadow-lg transition-all active:scale-95 flex items-center justify-center gap-1 text-base">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" /></svg>
-                開始
-            </button>
-            <button onclick="pauseUserAction()" id="pauseBtn"
-                class="flex-1 py-3 bg-yellow-600 hover:bg-yellow-500 text-white rounded-xl font-bold shadow-lg text-sm">
-                暫停
-            </button>
-            <button onclick="resetTimer(true)" 
-                class="flex-1 py-3 bg-gray-600 hover:bg-gray-500 text-white rounded-xl font-bold shadow-lg text-sm">
-                重置
-            </button>
-        </div>
-    </div>
-
-    <!-- 底部控制面板 -->
-    <div class="w-full max-w-sm bg-gray-800 p-3 rounded-t-2xl shadow-2xl border-t border-gray-700 z-50 shrink-0">
+    <!-- 底部：控制台 -->
+    <div class="w-full bg-gray-800 p-4 rounded-t-3xl shadow-2xl border-t border-gray-700 z-50 shrink-0">
         
-        <!-- 分頁切換 -->
-        <div class="flex mb-3 bg-gray-900 rounded-lg p-1 border border-gray-700">
-            <button onclick="setMode('gyro')" id="tabGyro" class="flex-1 py-1.5 text-xs font-bold rounded bg-gray-700 text-white transition-all">
-                手機感應
-            </button>
-            <button onclick="setMode('manual')" id="tabManual" class="flex-1 py-1.5 text-xs font-bold rounded text-gray-400 hover:text-white transition-all">
-                手動翻轉
-            </button>
+        <div class="flex bg-gray-900 rounded-lg p-1 mb-4">
+            <button onclick="setMode('gyro')" id="tabGyro" class="flex-1 py-2 text-xs font-bold rounded bg-blue-600 text-white transition-all">手機感應</button>
+            <button onclick="setMode('manual')" id="tabManual" class="flex-1 py-2 text-xs font-bold rounded text-gray-400 hover:text-white transition-all">手動翻轉</button>
         </div>
 
-        <!-- 感應模式內容 -->
-        <div id="panelGyro" class="space-y-2">
-            <div class="flex gap-2">
-                <button onclick="requestPermission()" id="permBtn"
-                    class="flex-[2] py-2 bg-blue-900/50 border border-blue-500 text-blue-200 hover:bg-blue-900 hover:text-white rounded-lg font-bold text-xs transition-all flex items-center justify-center gap-1">
-                    <span>📡 啟用感應器</span>
-                </button>
-                <button onclick="recalibrateGyro()" 
-                    class="flex-1 py-2 bg-red-900/50 border border-red-500 text-red-200 hover:bg-red-900 hover:text-white rounded-lg font-bold text-xs transition-all text-center">
-                    重新校正
-                </button>
-            </div>
-            <div id="gyroError" class="hidden p-1 text-red-400 text-[10px] text-center">
-                無法存取感應器，請確認權限或使用手動模式
+        <div class="flex gap-3">
+            <button onclick="startUserAction()" id="startBtn" class="flex-[2] py-4 bg-green-600 active:bg-green-700 text-white rounded-2xl font-bold shadow-lg text-lg flex items-center justify-center gap-2">
+                <span id="startIcon">▶</span> 開始
+            </button>
+            <div class="flex flex-col flex-1 gap-2">
+                <button onclick="pauseUserAction()" id="pauseBtn" class="flex-1 bg-yellow-600 active:bg-yellow-700 text-white rounded-xl text-xs font-bold">暫停</button>
+                <button onclick="resetTimer(true)" class="flex-1 bg-gray-600 active:bg-gray-700 text-white rounded-xl text-xs font-bold">重置</button>
             </div>
         </div>
 
-        <!-- 外觀設定 -->
-        <div class="mt-3 pt-3 border-t border-gray-700 flex gap-2">
-            <div class="flex-1">
-                <select id="colorSelect" onchange="updateAppearance()" class="w-full bg-gray-900 border-gray-600 text-xs rounded p-1.5 text-gray-300 focus:text-white outline-none">
-                    <option value="#ed8936">活力橘</option>
-                    <option value="#4299e1">海洋藍</option>
-                    <option value="#48bb78">森林綠</option>
-                    <option value="#9f7aea">神秘紫</option>
-                    <option value="#f56565">熱情紅</option>
-                    <option value="#e2e8f0">雪白色</option>
-                </select>
-            </div>
-            <div class="flex-1">
-                <select id="shapeSelect" onchange="updateAppearance()" class="w-full bg-gray-900 border-gray-600 text-xs rounded p-1.5 text-gray-300 focus:text-white outline-none">
-                    <option value="shape-classic">經典曲線</option>
-                    <option value="shape-modern">現代方角</option>
-                    <option value="shape-round">圓潤球型</option>
-                </select>
-            </div>
-        </div>
-        
-        <div class="mt-2 text-gray-600 text-[10px] font-mono opacity-50 text-center">
-            v1.0.2-responsive & fixed
-        </div>
+        <button onclick="requestPermission()" id="permBtn" class="w-full mt-3 py-2 border border-blue-500 text-blue-300 rounded-lg text-xs hidden">
+            📡 點擊啟用感應器權限
+        </button>
+        <div class="text-center mt-2 text-[10px] text-gray-600">v6.0-magic-name</div>
     </div>
 
     <script>
-        let mode = 'gyro'; 
+        let mode = 'manual'; // 預設手動
         let isRunning = false;
-        let isManualPaused = true; 
-        
-        let setHours = 0;
-        let setMinutes = 1;
-        let setSeconds = 0;
+        let isManualPaused = true;
         let totalTime = 60;
         let timeLeft = 60;
-        
-        let interval = null;
+        let timerInterval = null;
         let currentRotation = 0;
         let isInvertedMode = false;
         let audioCtx = null;
+        let lastBeta = 90;
+        let lastGamma = 0;
 
-        // 快取變數
-        let lastIsUpsideDown = false;
-        let lastIsUpright = true; 
-        let lastVisualRot = 0;
-
-        // Elements
         const rotator = document.getElementById('rotator');
         const hourglassContainer = document.getElementById('hourglassContainer');
         const timerDisplay = document.getElementById('timer');
@@ -336,77 +305,61 @@
         const sandBottom = document.getElementById('sandBottom');
         const stream = document.getElementById('stream');
         const modeBadge = document.getElementById('modeBadge');
-        
-        const hrInput = document.getElementById('hrInput');
-        const minInput = document.getElementById('minInput');
-        const secInput = document.getElementById('secInput');
         const tiltSlider = document.getElementById('tiltSlider');
-        
-        const permBtn = document.getElementById('permBtn');
-        const gyroError = document.getElementById('gyroError');
+        const sliderContainer = document.getElementById('sliderContainer');
         const startBtn = document.getElementById('startBtn');
         const pauseBtn = document.getElementById('pauseBtn');
-        
-        const colorSelect = document.getElementById('colorSelect');
-        const shapeSelect = document.getElementById('shapeSelect');
+        const permBtn = document.getElementById('permBtn');
         const tabGyro = document.getElementById('tabGyro');
         const tabManual = document.getElementById('tabManual');
 
-        // Init
         updateSandVisuals();
-        updateAppearance();
-        updateButtonStates();
-
-        function updateAppearance() {
-            const color = colorSelect.value;
+        
+        function setColor(color, btn) {
             document.documentElement.style.setProperty('--sand-color', color);
-            const shape = shapeSelect.value;
-            hourglassContainer.className = `hourglass-container ${shape}`;
+            document.querySelectorAll('.btn-color').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        function setShape(shapeClass, btn) {
+            hourglassContainer.className = `hourglass-container ${shapeClass}`;
+            document.querySelectorAll('.btn-shape').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
         }
 
         function applyTimeSettings() {
-            let h = parseInt(hrInput.value);
-            let m = parseInt(minInput.value);
-            let s = parseInt(secInput.value);
-            if (isNaN(h) || h < 0) h = 0;
-            if (isNaN(m) || m < 0) m = 0;
-            if (isNaN(s) || s < 0) s = 0;
-            if (s > 59) s = 59;
-            if (m > 59) m = 59;
-            if (h === 0 && m === 0 && s === 0) s = 10;
-
-            hrInput.value = h;
-            minInput.value = m;
-            secInput.value = s;
+            const h = parseInt(document.getElementById('hrInput').value) || 0;
+            const m = parseInt(document.getElementById('minInput').value) || 0;
+            const s = parseInt(document.getElementById('secInput').value) || 0;
             
-            setHours = h;
-            setMinutes = m;
-            setSeconds = s;
-            totalTime = h * 3600 + m * 60 + s;
+            let newTime = h * 3600 + m * 60 + s;
+            if (newTime <= 0) newTime = 10;
+
+            totalTime = newTime;
             resetTimer(true);
         }
 
         function setMode(newMode) {
             mode = newMode;
-            const panelGyro = document.getElementById('panelGyro');
-            const panelManual = document.getElementById('panelManual');
-
             if (mode === 'gyro') {
-                panelGyro.classList.remove('hidden');
-                panelManual.classList.add('hidden');
-                
-                tabGyro.className = "flex-1 py-1.5 text-xs font-bold rounded bg-blue-600 text-white transition-all shadow-md";
-                tabManual.className = "flex-1 py-1.5 text-xs font-bold rounded text-gray-400 hover:text-white transition-all";
+                tabGyro.className = "flex-1 py-2 text-xs font-bold rounded bg-blue-600 text-white transition-all";
+                tabManual.className = "flex-1 py-2 text-xs font-bold rounded text-gray-400 hover:text-white transition-all";
                 modeBadge.innerText = "模式: 手機感應";
-            } else {
-                panelGyro.classList.add('hidden');
-                panelManual.classList.remove('hidden');
+                sliderContainer.classList.remove('flex');
+                sliderContainer.classList.add('hidden');
                 
-                tabManual.className = "flex-1 py-1.5 text-xs font-bold rounded bg-blue-600 text-white transition-all shadow-md";
-                tabGyro.className = "flex-1 py-1.5 text-xs font-bold rounded text-gray-400 hover:text-white transition-all";
-                modeBadge.innerText = "模式: 手動翻轉";
-                handleManualTilt(0);
+                requestPermission();
+                rotator.classList.remove('animate-smooth');
+            } else {
+                tabManual.className = "flex-1 py-2 text-xs font-bold rounded bg-blue-600 text-white transition-all";
+                tabGyro.className = "flex-1 py-2 text-xs font-bold rounded text-gray-400 hover:text-white transition-all";
+                modeBadge.innerText = "模式: 手動滑桿";
+                sliderContainer.classList.remove('hidden');
+                sliderContainer.classList.add('flex');
+                
+                rotator.classList.add('animate-smooth');
                 tiltSlider.value = 0;
+                handleManualTilt(0);
             }
         }
 
@@ -416,196 +369,94 @@
         }
 
         function requestPermission() {
-            initAudio();
             if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-                DeviceOrientationEvent.requestPermission()
-                    .then(res => {
-                        if (res === 'granted') startGyro();
-                        else showGyroError();
-                    })
-                    .catch(showGyroError);
+                permBtn.classList.remove('hidden');
+                permBtn.onclick = () => {
+                    DeviceOrientationEvent.requestPermission()
+                        .then(res => {
+                            if (res === 'granted') {
+                                window.addEventListener('deviceorientation', handleOrientation);
+                                permBtn.classList.add('hidden');
+                            } else {
+                                alert("權限被拒絕，請使用手動模式");
+                            }
+                        });
+                };
             } else {
-                startGyro();
-            }
-        }
-
-        // 新增：重新校正功能
-        function recalibrateGyro() {
-            initAudio();
-            // 重置狀態變數
-            lastIsUpsideDown = false;
-            lastIsUpright = true;
-            lastVisualRot = 0;
-            isInvertedMode = false;
-            
-            // 嘗試重新綁定事件 (雖然通常不需要，但可以確保權限)
-            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-                DeviceOrientationEvent.requestPermission()
-                    .then(res => {
-                        if (res === 'granted') {
-                            window.removeEventListener('deviceorientation', handleOrientation);
-                            window.addEventListener('deviceorientation', handleOrientation);
-                            alert("已重新連接感應器！請將手機直立。");
-                        }
-                    });
-            } else {
-                window.removeEventListener('deviceorientation', handleOrientation);
                 window.addEventListener('deviceorientation', handleOrientation);
-                alert("已重置感應器狀態！");
             }
-            
-            // 強制重置計時器狀態
-            resetTimer(true);
-        }
-
-        function startGyro() {
-            window.addEventListener('deviceorientation', handleOrientation);
-            permBtn.innerHTML = "<span>📡 感應運作中</span>";
-            permBtn.className = "flex-[2] py-2 bg-green-900/50 border border-green-500 text-green-200 rounded-lg font-bold text-xs transition-all flex items-center justify-center gap-1";
-            permBtn.disabled = true;
-            gyroError.classList.add('hidden');
-        }
-
-        function showGyroError() {
-            gyroError.classList.remove('hidden');
-            permBtn.innerText = "授權失敗";
         }
 
         function handleOrientation(event) {
             if (mode !== 'gyro') return;
-            const beta = event.beta; 
+            const beta = event.beta;
             const gamma = event.gamma;
-            if (beta === null) return;
+            if (beta === null || gamma === null) return;
 
-            // 調整判定邏輯，讓它更寬容一點
-            const isUpsideDown = (beta < -40 || beta > 140);
-            const isUpright = (beta > 40 && beta < 140);
+            lastBeta = beta;
+            lastGamma = gamma;
 
-            let visualRot = -gamma;
-            // 限制視覺旋轉，避免過度翻轉
-            if (visualRot > 60) visualRot = 60;
-            if (visualRot < -60) visualRot = -60;
-            
-            lastIsUpsideDown = isUpsideDown;
-            lastIsUpright = isUpright;
-            lastVisualRot = visualRot;
-
-            updateStateAndVisuals(isUpsideDown, isUpright, visualRot);
+            let visualAngle = -gamma;
+            if (Math.abs(beta) > 90) {
+                if (visualAngle >= 0) visualAngle = 180 - visualAngle;
+                else visualAngle = -180 - visualAngle;
+            }
+            updateRotationLogic(visualAngle);
         }
 
         function handleManualTilt(val) {
             if (mode !== 'manual') return;
-            initAudio();
-            val = parseInt(val);
-            const isUpright = (val > -45 && val < 45);
-            const isUpsideDown = (val < -135 || val > 135);
-            updateStateAndVisuals(isUpsideDown, isUpright, val);
+            updateRotationLogic(parseInt(val));
         }
 
-        function updateStateAndVisuals(isUpsideDown, isUpright, angle) {
+        function updateRotationLogic(angle) {
             currentRotation = angle;
             rotator.style.transform = `rotate(${angle}deg)`;
 
-            const isAligned = Math.abs(angle) < 45 || Math.abs(angle) > 135;
+            let normAngle = angle % 360;
+            if (normAngle > 180) normAngle -= 360;
+            if (normAngle < -180) normAngle += 360;
 
-            // 1. 翻轉邏輯
+            const isUpright = Math.abs(normAngle) < 45;
+            const isUpsideDown = Math.abs(normAngle) > 135;
+
             if (isUpsideDown && !isInvertedMode) {
                 isInvertedMode = true;
-                timeLeft = totalTime - timeLeft;
-                updateSandVisuals(isAligned);
+                if(timeLeft < totalTime) timeLeft = totalTime - timeLeft;
             } else if (isUpright && isInvertedMode) {
                 isInvertedMode = false;
-                timeLeft = totalTime - timeLeft;
-                updateSandVisuals(isAligned);
-            } else {
-                updateSandVisuals(isAligned);
+                if(timeLeft < totalTime) timeLeft = totalTime - timeLeft;
             }
 
-            // 2. 計時邏輯
+            const canFlow = Math.abs(normAngle) <= 45 || Math.abs(normAngle) >= 135;
+
             if (isManualPaused) {
                 pauseTimer();
-                modeBadge.innerText = "準備就緒 / 已暫停";
-                modeBadge.className = "px-3 py-1 bg-gray-600 rounded-full text-xs font-bold text-white shadow-md mb-2";
-                hourglassContainer.classList.remove('shake-active');
             } else {
-                if (isUpsideDown || isUpright) {
-                    if (isAligned && timeLeft > 0 && !isRunning) {
-                        startTimer();
-                    } else if (!isAligned || timeLeft <= 0) {
-                        pauseTimer();
-                    }
-                    
-                    if (isRunning) {
-                        modeBadge.innerText = isInvertedMode ? "倒置計時中..." : "正立計時中...";
-                        modeBadge.className = "px-3 py-1 bg-green-600 rounded-full text-xs font-bold text-white shadow-md mb-2";
-                    } else if (timeLeft > 0) {
-                        modeBadge.innerText = "傾斜角度過大 (暫停)";
-                        modeBadge.className = "px-3 py-1 bg-yellow-600 rounded-full text-xs font-bold text-white shadow-md mb-2";
-                    }
+                if (canFlow) {
+                    if (!isRunning && timeLeft > 0) startTimer();
+                    modeBadge.innerText = isInvertedMode ? "倒置計時中" : "正立計時中";
+                    modeBadge.className = "mt-1 px-2 py-0.5 bg-green-600 rounded text-[10px] text-white";
                 } else {
                     if (isRunning) pauseTimer();
-                    modeBadge.innerText = "橫放 (暫停中)";
-                    modeBadge.className = "px-3 py-1 bg-yellow-600 rounded-full text-xs font-bold text-white shadow-md mb-2";
+                    modeBadge.innerText = "角度傾斜 (暫停)";
+                    modeBadge.className = "mt-1 px-2 py-0.5 bg-yellow-600 rounded text-[10px] text-white";
                 }
             }
-        }
-
-        function startUserAction() {
-            initAudio();
-            if (timeLeft <= 0) return; 
-            isManualPaused = false;
-            
-            if(mode === 'manual') {
-                handleManualTilt(tiltSlider.value);
-            } else if (mode === 'gyro') {
-                updateStateAndVisuals(lastIsUpsideDown, lastIsUpright, lastVisualRot);
-            }
-            
-            updateButtonStates();
-            hourglassContainer.classList.remove('shake-active');
-        }
-
-        function pauseUserAction() {
-            isManualPaused = true;
-            pauseTimer();
-            updateButtonStates();
-            modeBadge.innerText = "已暫停";
-            modeBadge.className = "px-3 py-1 bg-yellow-600 rounded-full text-xs font-bold text-white shadow-md mb-2";
-            hourglassContainer.classList.remove('shake-active');
-        }
-
-        function updateButtonStates() {
-            if (isManualPaused) {
-                startBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-gray-600');
-                startBtn.classList.add('bg-green-600', 'hover:bg-green-500');
-                startBtn.innerHTML = `
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
-                    </svg> 開始`;
-
-                pauseBtn.classList.add('opacity-50', 'cursor-not-allowed');
-            } else {
-                startBtn.classList.add('opacity-50', 'cursor-not-allowed', 'bg-gray-600');
-                startBtn.classList.remove('bg-green-600', 'hover:bg-green-500');
-                startBtn.innerHTML = `
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg> 計時中`;
-
-                pauseBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-            }
+            updateSandVisuals(canFlow);
         }
 
         function updateSandVisuals(showStream = true) {
             let pct = 0;
-            if (totalTime > 0) {
-                pct = 1 - (timeLeft / totalTime);
-            }
-            
-            // 上方 (Draining): 100 (滿) -> 230 (空)
-            const drainY = 100 + (pct * (230 - 100));
-            // 下方 (Filling): 230 (空) -> 100 (滿)
-            const fillY = 230 - (pct * (230 - 100));
+            if (totalTime > 0) pct = 1 - (timeLeft / totalTime);
+
+            const drainStart = 110; 
+            const drainEnd = 205;   
+            const fillStart = 205;  
+            const fillEnd = 110;    
+
+            const drainY = drainStart + (pct * (drainEnd - drainStart));
+            const fillY = fillStart - (pct * (fillStart - fillEnd));
 
             if (!isInvertedMode) {
                 sandTop.style.transform = `rotate(${-currentRotation}deg) translateY(${drainY}px)`;
@@ -614,65 +465,97 @@
                 sandBottom.style.transform = `rotate(${-currentRotation}deg) translateY(${drainY}px)`;
                 sandTop.style.transform = `rotate(${-currentRotation}deg) translateY(${fillY}px)`;
             }
+
             stream.style.transform = `rotate(${-currentRotation}deg)`;
             
-            if (!showStream || !isRunning) {
-                stream.style.opacity = '0';
-            } else {
+            if (showStream && isRunning && timeLeft > 0) {
                 stream.style.opacity = '1';
+            } else {
+                stream.style.opacity = '0';
             }
+        }
+
+        function startUserAction() {
+            initAudio();
+            if (timeLeft <= 0) {
+                resetTimer(true);
+                return;
+            }
+            isManualPaused = false;
+            updateButtonUI();
+            
+            if (mode === 'manual') {
+                handleManualTilt(tiltSlider.value);
+            } else {
+                handleOrientation({ beta: lastBeta, gamma: lastGamma });
+            }
+        }
+
+        function pauseUserAction() {
+            isManualPaused = true;
+            pauseTimer();
+            updateButtonUI();
+            modeBadge.innerText = "已暫停";
+            modeBadge.className = "mt-1 px-2 py-0.5 bg-yellow-600 rounded text-[10px] text-white";
         }
 
         function startTimer() {
             if (isRunning) return;
-            if (timeLeft <= 0) return;
             isRunning = true;
             
             let lastTime = Date.now();
-            interval = setInterval(() => {
+            timerInterval = setInterval(() => {
                 const now = Date.now();
                 const delta = (now - lastTime) / 1000;
                 lastTime = now;
                 timeLeft -= delta;
                 
-                const isAligned = Math.abs(currentRotation) < 45 || Math.abs(currentRotation) > 135;
-
                 if (timeLeft <= 0) {
                     timeLeft = 0;
-                    pauseTimer();
-                    updateTimeDisplay();
-                    updateSandVisuals(isAligned);
-                    modeBadge.innerText = "時間到！";
-                    playAlarm();
-                    isManualPaused = true; 
-                    updateButtonStates();
-                    hourglassContainer.classList.add('shake-active');
+                    finishTimer();
                 } else {
                     updateTimeDisplay();
-                    updateSandVisuals(isAligned);
+                    let normAngle = currentRotation % 360;
+                    if (normAngle > 180) normAngle -= 360;
+                    if (normAngle < -180) normAngle += 360;
+                    const canFlow = Math.abs(normAngle) <= 45 || Math.abs(normAngle) >= 135;
+                    updateSandVisuals(canFlow);
                 }
-            }, 50);
+            }, 30);
         }
 
         function pauseTimer() {
             isRunning = false;
-            clearInterval(interval);
+            clearInterval(timerInterval);
             stream.style.opacity = '0';
+            hourglassContainer.classList.remove('shake-active');
+        }
+
+        function finishTimer() {
+            pauseTimer();
+            updateTimeDisplay();
+            updateSandVisuals(false);
+            modeBadge.innerText = "時間到！";
+            modeBadge.className = "mt-1 px-2 py-0.5 bg-red-600 rounded text-[10px] text-white";
+            playAlarm();
+            hourglassContainer.classList.add('shake-active');
+            isManualPaused = true;
+            updateButtonUI();
         }
 
         function resetTimer(fullStop = true) {
             pauseTimer();
             if (fullStop) {
-                timeLeft = totalTime; 
-                isInvertedMode = false; 
-                isManualPaused = true; 
-                updateButtonStates();
-                modeBadge.innerText = "已重置 (請按開始)";
-                modeBadge.className = "px-3 py-1 bg-gray-600 rounded-full text-xs font-bold text-white shadow-md mb-2";
+                timeLeft = totalTime;
+                isInvertedMode = false;
+                isManualPaused = true;
+                updateButtonUI();
+                modeBadge.innerText = "已重置";
+                modeBadge.className = "mt-1 px-2 py-0.5 bg-gray-600 rounded text-[10px] text-white";
                 if (mode === 'manual') {
-                    snapToAngle(0);
+                    tiltSlider.value = 0;
+                    handleManualTilt(0);
                 }
-                hourglassContainer.classList.remove('shake-active');
             }
             updateTimeDisplay();
             updateSandVisuals();
@@ -684,40 +567,43 @@
             t %= 3600;
             const m = Math.floor(t / 60);
             const s = t % 60;
-            let text = (h > 0 ? String(h).padStart(2,'0') + ":" : "00:") + String(m).padStart(2,'0') + ":" + String(s).padStart(2,'0');
-            timerDisplay.innerText = text;
+            const text = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+            document.getElementById('timer').innerText = text;
+        }
+
+        function updateButtonUI() {
+            if (isManualPaused) {
+                startBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                pauseBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                startBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                pauseBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
         }
 
         function initAudio() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
         }
         function playAlarm() {
             initAudio();
+            if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
             if (!audioCtx) return;
-            navigator.vibrate?.([200, 100, 200, 100, 400]);
             const now = audioCtx.currentTime;
-            createBeep(now, 880, 0.1); 
-            createBeep(now + 0.15, 587, 0.4); 
-            createBeep(now + 0.8, 880, 0.1); 
-            createBeep(now + 0.95, 587, 0.4); 
-        }
-        function createBeep(startTime, freq, duration) {
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(freq, startTime);
-            gain.gain.setValueAtTime(0.1, startTime); 
-            gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
             osc.connect(gain);
             gain.connect(audioCtx.destination);
-            osc.start(startTime);
-            osc.stop(startTime + duration);
+            osc.frequency.setValueAtTime(880, now);
+            gain.gain.setValueAtTime(0.1, now);
+            gain.gain.linearRampToValueAtTime(0, now + 0.5);
+            osc.start(now);
+            osc.stop(now + 0.5);
         }
+        
+        // 初始執行一次設定模式，確保 UI 正確
+        setMode('manual');
     </script>
 </body>
 </html>
+
